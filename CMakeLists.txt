@@ -4,5 +4,7 @@ project( test )
 find_package( OpenCV REQUIRED )
 add_executable( test 
 main.cc 
-ORBextractor.cc)
+ORBextractor.cc
+ORBmatcher.cc
+Frame.cc)
 target_link_libraries( test ${OpenCV_LIBS} )

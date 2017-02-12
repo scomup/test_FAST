@@ -1,65 +1,52 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "ORBextractor.h"
-
+#include "ORBmatcher.h"
+#include "Frame.h"
 #include <iostream>
-const char filename_test[] = "/home/liu/workspace/test_FAST/right_image0000.png"; // 512x512 px 3 channels
-
+const char filename_right[] = "/home/liu/workspace/test_FAST/right1.png"; // 512x512 px 3 channels
+const char filename_left[] = "/home/liu/workspace/test_FAST/left1.png";   // 512x512 px 3 channels
 using namespace cv;
 using namespace ORB_SLAM;
+
 int main()
 {
-	std::cout << "== Color image ==" << std::endl;
 
-	Mat input,output;
-	input = imread(filename_test);
-    cvtColor(input, input, CV_RGB2GRAY);
-    ORBextractor orb  =  ORBextractor();
-    ORBextractor orb0  =  ORBextractor(1000,  1.2f, 8,  0, 20);
+    Mat right, left;
+    Mat right_c, left_c;
+    right_c = imread(filename_right);
+    left_c = imread(filename_left);
+    cvtColor(right_c, left, CV_RGB2GRAY);
+    cvtColor(left_c, right, CV_RGB2GRAY);
 
-    std::vector<cv::KeyPoint> keys;
-    cv::Mat descriptors;
- 
+    ORBextractor orb = ORBextractor(2000, 1.2f, 8, 1, 20);
 
-  /*  
-    Mat gb;
-    GaussianBlur(input, gb, Size(5,5), 1);
-    orb(gb,cv::Mat(),keys,descriptors);
-    drawKeypoints(gb, keys, gb);
-    imshow("GaussianBlur",gb);
-    printf("GaussianBlur:%d\n",keys.size());
+    cv::Mat K = cv::Mat::eye(3, 3, CV_32F);
+    K.at<float>(0, 0) = 320;
+    K.at<float>(1, 1) = 320;
+    K.at<float>(0, 2) = 320.5;
+    K.at<float>(1, 2) = 240.5;
 
-    Mat mb;
-    medianBlur(input, mb, 5);
-    orb(mb,cv::Mat(),keys,descriptors);
-    drawKeypoints(mb, keys, mb);
-    imshow("medianBlur",mb);
-    printf("medianBlur:%d\n",keys.size());
-*/
-    Mat bi;
-    bilateralFilter(input, bi, -1,30,5);
-    orb(bi,cv::Mat(),keys,descriptors);
-    drawKeypoints(bi, keys, bi);
-    imshow("bilateralFilter",bi);
-    printf("bilateralFilter:%d\n",keys.size());
+    cv::Mat DistCoef(4, 1, CV_32F);
+    DistCoef.at<float>(0) = 0;
+    DistCoef.at<float>(1) = 0;
+    DistCoef.at<float>(2) = 0;
+    DistCoef.at<float>(3) = 0;
 
-    Mat bi0;
-    bilateralFilter(input,bi0, -1,30,5);
-    orb0(bi0,cv::Mat(),keys,descriptors);
-    drawKeypoints(bi0, keys, bi0);
-    imshow("bilateralFilter0",bi0);
-    printf("bilateralFilter0:%d\n",keys.size());
-
-
-
-/*
-    orb(input,cv::Mat(),keys,descriptors);
-    imwrite("original.png",input);
-    drawKeypoints(input, keys, input);
-    imshow("original",input);
-    printf("original:%d\n",keys.size());
-
-*/
+    Frame Frame_left = Frame(left, 0, &orb, K, DistCoef);
+    Frame Frame_right = Frame(right, 0, &orb, K, DistCoef);
+    std::vector<int> vnMatches12;
+    std::vector<cv::Point2f> mvbPrevMatched;
+    SearchForInitialization(Frame_left, Frame_right, mvbPrevMatched,vnMatches12,100  );
+    for(int i = 0; i<vnMatches12.size();i++){
+        if(vnMatches12[i] == -1)
+            continue;
+        cv::KeyPoint kp_l = Frame_left.mvKeys[i];
+         cv::KeyPoint kp_r = Frame_right.mvKeys[vnMatches12[i]];
+        line(left_c, kp_l.pt, kp_r.pt,Scalar( 0, 0, 255 ));
+    }
+    imshow("left",left_c);
     waitKey(0);
-
 }
+
+
