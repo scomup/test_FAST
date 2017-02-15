@@ -1,35 +1,34 @@
 #include "convert.h"
 
-#define PI 3.14159265258979
 
 void computeAnglesFromMatrix(
                  cv::Mat R,
-                 double & angle_x,
-                 double & angle_y,
-                 double & angle_z
+                 float& angle_x,
+                 float& angle_y,
+                 float& angle_z
                  ){
 
-  double threshold = 0.001;
+  float threshold = 0.001;
 
-  if(abs(R.at<double>(2,1) - 1.0) < threshold){ // R(2,1) = sin(x) = 1の時
+  if(abs(R.at<float>(2,1) - 1.0) < threshold){ // R(2,1) = sin(x) = 1の時
     angle_x = PI / 2;
     angle_y = 0;
-    angle_z = atan2(R.at<double>(1,0), R.at<double>(0,0));
-  }else if(abs(R.at<double>(2,1) + 1.0) < threshold){ // R(2,1) = sin(x) = -1の時
+    angle_z = atan2(R.at<float>(1,0), R.at<float>(0,0));
+  }else if(abs(R.at<float>(2,1) + 1.0) < threshold){ // R(2,1) = sin(x) = -1の時
     angle_x = - PI / 2;
     angle_y = 0;
-    angle_z = atan2(R.at<double>(1,0), R.at<double>(0,0));
+    angle_z = atan2(R.at<float>(1,0), R.at<float>(0,0));
   }else{
-    angle_x = asin(R.at<double>(2,1));
-    angle_y = atan2(-R.at<double>(2,0), R.at<double>(2,2));
-    angle_z = atan2(-R.at<double>(0,1), R.at<double>(1,1));
+    angle_x = asin(R.at<float>(2,1));
+    angle_y = atan2(-R.at<float>(2,0), R.at<float>(2,2));
+    angle_z = atan2(-R.at<float>(0,1), R.at<float>(1,1));
   }
 }
 
 cv::Mat computeMatrixFromAngles(
-     double x,
-     double y,
-     double z){
+     float x,
+     float y,
+     float z){
   cv::Mat R = cv::Mat::zeros(3, 3, CV_32F);
   R.row(0).col(0) = cos(y)*cos(z) - sin(x)*sin(y)*sin(z);
   R.row(0).col(1) = -cos(x)*sin(z);

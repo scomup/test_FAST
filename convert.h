@@ -1,14 +1,16 @@
 #pragma once
 #include <opencv2/core/core.hpp>
 
+#define PI 3.14159265258979
+
 void computeAnglesFromMatrix(
                  cv::Mat R,
-                 double & angle_x,
-                 double & angle_y,
-                 double & angle_z
+                 float & angle_x,
+                 float & angle_y,
+                 float & angle_z
                  );
 
 cv::Mat computeMatrixFromAngles(
-     double x,
-     double y,
-     double z);
+     float x,
+     float y,
+     float z);

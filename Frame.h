@@ -17,10 +17,7 @@
 * You should have received a copy of the GNU General Public License
 * along with ORB-SLAM. If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef FRAME_H
-#define FRAME_H
-
+#pragma once
 
 
 #include "ORBextractor.h"
@@ -112,4 +109,3 @@ private:
 
 }// namespace ORB_SLAM
 
-#endif // FRAME_H

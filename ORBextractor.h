@@ -18,8 +18,7 @@
 * along with ORB-SLAM. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ORBEXTRACTOR_H
-#define ORBEXTRACTOR_H
+#pragma once
 
 #include <vector>
 #include <list>
@@ -78,5 +77,5 @@ protected:
 
 } //namespace ORB_SLAM
 
-#endif
+
 

@@ -54,23 +54,56 @@ int main()
         circle(right_c, kp_r.pt, 2, Scalar(0, 255, 0));
 
     }
+    //pose:original 
+    
     cv::Mat Tcw_left = cv::Mat::eye(4, 4, CV_32F);
     cv::Mat Tcw_right = cv::Mat::eye(4, 4, CV_32F);
-
-    cv::Mat R = computeMatrixFromAngles(0,0,-1.507);
+    Tcw_right.at<float>(0, 3) = -0.1;
+    
+    //pose:roatateY 45 
+    /*
+    cv::Mat Tcw_left = cv::Mat::eye(4, 4, CV_32F);
+    cv::Mat Tcw_right = cv::Mat::eye(4, 4, CV_32F);
+    cv::Mat R = computeMatrixFromAngles(0,PI/4,0);
     cout <<R<<endl;
-    //Tcw_left.at<float>(0, 3) = -1.0;
-    //Tcw_right.at<float>(0, 3) = -1.1;
-    Tcw_right.at<float>(1, 3) = -0.1;
-    //Tcw_left.rowRange(0, 3).colRange(0, 3) = R;
-    //Tcw_right.rowRange(0, 3).colRange(0, 3) = R;
+    Tcw_left.at<float>(0, 3) = -1.0;
+    Tcw_right.at<float>(0, 3) = -1.1;
     R.copyTo(Tcw_left.rowRange(0, 3).colRange(0, 3));
     R.copyTo(Tcw_right.rowRange(0, 3).colRange(0, 3));
-    std::cout <<"Tcw_right"<< Tcw_right << std::endl;
-    std::cout <<"Tcw_left"<< Tcw_left << std::endl;
+    */
+
+/*
+    cv::Mat Tcw_left = cv::Mat::eye(4, 4, CV_32F);
+    cv::Mat Tcw_right = cv::Mat::eye(4, 4, CV_32F);
+    cv::Mat Rlw = computeMatrixFromAngles(0,PI/2,0);
+    cv::Mat Rrw = computeMatrixFromAngles(0,PI/2,0);
+    Tcw_left.at<float>(0, 3) = -1.0;
+    Tcw_right.at<float>(0, 3) = -1.1;
+    cv::Mat trw = Tcw_right.rowRange(0, 3).col(3);
+    cv::Mat tlw = Tcw_left.rowRange(0, 3).col(3);
+
+
+    Rlw.copyTo(Tcw_left.rowRange(0, 3).colRange(0, 3));
+    Rrw.copyTo(Tcw_right.rowRange(0, 3).colRange(0, 3));
+
+    cv::Mat Rwr;
+    cv::transpose(Rrw, Rwr);
+    cv::Mat Rlr = Rwr * Rlw;  
+
+    float x_angle, y_angle, z_angle;
+    computeAnglesFromMatrix(Rlr, x_angle, y_angle, z_angle);
+
+    printf("%f %f %f\n",x_angle, y_angle, z_angle);
+
+    cv::Mat tlr = Rlw*(-Rwr*trw)+tlw;
+    std::cout<< tlr <<std::endl;
+    */
+    //std::cout <<"Tcw_right"<< Tcw_right << std::endl;
+    //std::cout <<"Tcw_left"<< Tcw_left << std::endl;
     cv::Mat Tcw1 = Tcw_left;
     cv::Mat Rcw1 = Tcw_left.rowRange(0, 3).colRange(0, 3);
     cv::Mat tcw1 = Tcw_left.rowRange(0, 3).col(3);
+    
 
     cv::Mat Tcw2 = Tcw_right;
     cv::Mat Rcw2 = Tcw_right.rowRange(0, 3).colRange(0, 3);
@@ -87,6 +120,20 @@ int main()
     const float cy1 = Frame_right.cy;
     const float invfx1 = 1.0f / fx1;
     const float invfy1 = 1.0f / fy1;
+    {
+        float x_angle, y_angle, z_angle;
+        cv::Mat Rwc_left = Tcw_left.rowRange(0, 3).colRange(0, 3).t();
+        cv::Mat twc_left = -Rwc_left * Tcw_left.rowRange(0, 3).col(3);
+        computeAnglesFromMatrix(Rwc_left, x_angle, y_angle, z_angle);
+        ofs << "camera:" << twc_left.at<float>(0) << "," << twc_left.at<float>(1) << "," << twc_left.at<float>(2)
+            << "," << x_angle << "," << y_angle << "," << z_angle << std::endl;
+
+        cv::Mat Rwc_right = Tcw_right.rowRange(0, 3).colRange(0, 3).t();
+        cv::Mat twc_right = -Rwc_right * Tcw_right.rowRange(0, 3).col(3);
+        computeAnglesFromMatrix(Rwc_right, x_angle, y_angle, z_angle);
+        ofs << "camera:" << twc_right.at<float>(0) << "," << twc_right.at<float>(1) << "," << twc_right.at<float>(2)
+            << "," << x_angle << "," << y_angle << "," << z_angle << std::endl;
+    }
 
     for (size_t i = 0; i < vnMatches12.size(); i++)
     {
@@ -107,17 +154,17 @@ int main()
         cv::SVD::compute(A, w, u, vt, cv::SVD::MODIFY_A | cv::SVD::FULL_UV);
         cv::Mat x3D = vt.row(3).t();
 
-        if (x3D.at<float>(3) == 0)
-            continue;
+        //if (x3D.at<float>(3) == 0)
+         //   continue;
         // Euclidean coordinates
         x3D = x3D.rowRange(0, 3) / x3D.at<float>(3);
         cv::Mat x3Dt = x3D.t();
         //Check triangulation in front of cameras
         float z1 = Rcw1.row(2).dot(x3Dt) + tcw1.at<float>(2);
-        if (z1 <= 0)
+       // if (z1 <= 0)
         //    continue;
         std::cout << x3Dt << std::endl;
-        ofs << x3Dt.at<float>(0)<<","<< x3Dt.at<float>(1)<<","<< x3Dt.at<float>(2)<<std::endl;
+        ofs <<"point:"<<x3Dt.at<float>(0)<<","<< x3Dt.at<float>(1)<<","<< x3Dt.at<float>(2)<<std::endl;
     }
     ofs.close();
 
