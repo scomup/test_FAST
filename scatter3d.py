@@ -4,11 +4,11 @@
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 import re
 
-
 def euler2mat(z=0, y=0, x=0):
-
+    
     Ms = []
     if z:
         cosz = math.cos(z)
@@ -45,11 +45,9 @@ f = open('mapPoint.txt', 'r')
 for line in f:
     itemList = filter(lambda w: len(w) > 0, re.split(r'\s|:|\,', line))
     if(itemList[0] == 'camera'):
-        print itemList
         c = [float(itemList[1]), float(itemList[2]), float(itemList[3]), float(itemList[4]), float(itemList[5]), float(itemList[6])]
         cam.append(c)
     else:
-        print 'point'
         x.append(float(itemList[1]))
         y.append(float(itemList[2]))
         z.append(float(itemList[3]))
@@ -57,19 +55,25 @@ for line in f:
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
+ax.scatter(0, 0, 0, color='b', marker='^')
+
+first_flag = 1
 for c in cam:
     R = euler2mat(c[3], c[4], c[5])
-    v = np.array([[0],[0],[1]]);
-    v = R*v
-    ax.quiver(c[0], c[1], c[2], v[3], v[4], v[5], length=1, normalize=True)
+    v = np.array([[0],[0],[1]])
+    v = np.dot(R,v)
+    if first_flag:  
+        first_flag = 0
+        ax.quiver(c[0], c[1], c[2], v[0][0], v[1][0], v[2][0], color='g' ,length=0.2, normalize=True)
+    else:
+        ax.quiver(c[0], c[1], c[2], v[0][0], v[1][0], v[2][0], color='y' ,length=0.2, normalize=True)
     
-ax.scatter(x, y, z, c='r', marker='o')
-
+ax.scatter(x, y, z, color='r', marker='o')
 ax.set_xlabel('X Label')
 ax.set_ylabel('Y Label')
 ax.set_zlabel('Z Label')
 
 ax.set_xlim(-3.0, 3.0)
 ax.set_ylim(-3.0, 3.0)
-ax.set_zlim(0.0, 3.0)
+ax.set_zlim(-3.0, 3.0)
 plt.show()

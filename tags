@@ -1,0 +1,22 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+R	scatter3d.py	/^    R = euler2mat(c[3], c[4], c[5])$/;"	kind:variable	line:63
+ax	scatter3d.py	/^ax = fig.add_subplot(111, projection='3d')$/;"	kind:variable	line:57
+c	scatter3d.py	/^        c = [float(itemList[1]), float(itemList[2]), float(itemList[3]), float(itemList[4]), float(itemList[5]), float(itemList[6])]$/;"	kind:variable	line:49
+cam	scatter3d.py	/^cam = []$/;"	kind:variable	line:44
+euler2mat	scatter3d.py	/^def euler2mat(z=0, y=0, x=0):$/;"	kind:function	line:11
+f	scatter3d.py	/^f = open('mapPoint.txt', 'r')$/;"	kind:variable	line:45
+fig	scatter3d.py	/^fig = plt.figure()$/;"	kind:variable	line:56
+first_flag	scatter3d.py	/^        first_flag = 0$/;"	kind:variable	line:67
+first_flag	scatter3d.py	/^first_flag = 1$/;"	kind:variable	line:61
+itemList	scatter3d.py	/^    itemList = filter(lambda w: len(w) > 0, re.split(r'\\s|:|\\,', line))$/;"	kind:variable	line:47
+scatter3d.py	scatter3d.py	1;"	kind:file	line:1
+v	scatter3d.py	/^    v = np.array([[0],[0],[1]])$/;"	kind:variable	line:64
+v	scatter3d.py	/^    v = np.dot(R,v)$/;"	kind:variable	line:65
+x	scatter3d.py	/^x = []$/;"	kind:variable	line:40
+y	scatter3d.py	/^y = []$/;"	kind:variable	line:41
+z	scatter3d.py	/^z = []$/;"	kind:variable	line:42
