@@ -7,9 +7,14 @@
 #include "ORBmatcher.h"
 #include "Frame.h"
 #include "convert.h"
+#include <limits>
+#include <math.h> 
 
-const char filename_right[] = "/home/liu/workspace/test_FAST/right.jpg"; // 512x512 px 3 channels
-const char filename_left[] = "/home/liu/workspace/test_FAST/left.jpg";   // 512x512 px 3 channels
+
+const char filename_right[] = "/home/liu/workspace/test_FAST/right.png"; // 512x512 px 3 channels
+const char filename_left[] = "/home/liu/workspace/test_FAST/left.png";   // 512x512 px 3 channels
+constexpr double epsilon = std::numeric_limits<double>::epsilon();
+
 using namespace cv;
 using namespace ORB_SLAM;
 
@@ -52,13 +57,13 @@ int main()
         line(right_c, kp_l.pt, kp_r.pt, Scalar(0, 0, 255));
         circle(left_c, kp_l.pt, 2, Scalar(0, 255, 0));
         circle(right_c, kp_r.pt, 2, Scalar(0, 255, 0));
-
     }
+
     //pose:original 
     
     cv::Mat Tcw_left = cv::Mat::eye(4, 4, CV_32F);
     cv::Mat Tcw_right = cv::Mat::eye(4, 4, CV_32F);
-    Tcw_right.at<float>(0, 3) = -0.1;
+    Tcw_right.at<float>(0, 3) = -0.2;
     
     //pose:roatateY 45 
     /*
@@ -141,9 +146,45 @@ int main()
             continue;
         const cv::KeyPoint kp1 = Frame_left.mvKeysUn[i];
         const cv::KeyPoint kp2 = Frame_right.mvKeysUn[vnMatches12[i]];
+
         //float disparity = sqrt(kp1.pt.x * kp1.pt.x + kp1.pt.y * kp1.pt.y) - sqrt(kp2.pt.x * kp2.pt.x + kp2.pt.y * kp2.pt.y);
-        cv::Mat xn1 = (cv::Mat_<float>(3, 1) << (kp1.pt.x - cx1) * invfx1, (kp1.pt.y - cy1) * invfy1, 1.0);
-        cv::Mat xn2 = (cv::Mat_<float>(3, 1) << (kp2.pt.x - cx1) * invfx1, (kp2.pt.y - cy1) * invfy1, 1.0);
+       // cv::Mat xn1 = (cv::Mat_<float>(3, 1) << (kp1.pt.x - cx1) * invfx1, (kp1.pt.y - cy1) * invfy1, 1.0);
+       // cv::Mat xn2 = (cv::Mat_<float>(3, 1) << (kp2.pt.x - cx1) * invfx1, (kp2.pt.y - cy1) * invfy1, 1.0);
+
+        const float u1 = (kp1.pt.x - cx1) * invfx1;
+        const float v1 = (kp1.pt.y - cy1) * invfy1;
+        const float r1_ = sqrt(u1*u1 + v1*v1);
+        const float z1_ = cos(2*atan(r1_/2));
+        const float x1_ = u1 * sqrt(1 - z1_*z1_)/(r1_ + epsilon);
+        const float y1_ = v1 * sqrt(1 - z1_*z1_)/(r1_ + epsilon);
+{
+    const float x = x1_;
+    const float y = y1_;
+    const float z = z1_;
+    const float l = sqrt(x*x + y*y + z*z);
+    const float theta = acos(z/l);
+    float phi = acos(x/(sqrt(x*x + y*y) + epsilon));
+    if(y < 0)
+        phi = -phi;        
+    const float  r = 2*tan(theta/2);
+    const float u = r*cos(phi);
+    const float v = r*sin(phi);
+}
+
+        const float u2 = (kp2.pt.x - cx1) * invfx1;
+        const float v2 = (kp2.pt.y - cy1) * invfy1;
+        const float r2_ = sqrt(u2*u2 + v2*v2);
+        const float z2_ = cos(2*atan(r2_/2));
+        const float x2_ = u2 * sqrt(1 - z2_*z2_)/(r2_ + epsilon);
+        const float y2_ = v2 * sqrt(1 - z2_*z2_)/(r2_ + epsilon);
+        //printf("1u:%f,v:%f\n",u1,v1);
+        //printf("2u:%f,v:%f\n",u2,v2);
+        //printf("1x:%f,y:%f,z:%f\n",x1_,y1_,z1_);
+        //printf("2x:%f,y:%f,z:%f\n",x2_,y2_,z2_);
+
+        cv::Mat xn1 = (cv::Mat_<float>(3, 1) << x1_/z1_, y1_/z1_, 1.0);
+        cv::Mat xn2 = (cv::Mat_<float>(3, 1) << x2_/z2_, y2_/z2_, 1.0);
+        
         // Linear Triangulation Method
         cv::Mat A(4, 4, CV_32F);
         A.row(0) = xn1.at<float>(0) * Tcw1.row(2) - Tcw1.row(0);
@@ -163,8 +204,9 @@ int main()
         float z1 = Rcw1.row(2).dot(x3Dt) + tcw1.at<float>(2);
        // if (z1 <= 0)
         //    continue;
-        std::cout << x3Dt << std::endl;
+        //std::cout << x3Dt << std::endl;
         ofs <<"point:"<<x3Dt.at<float>(0)<<","<< x3Dt.at<float>(1)<<","<< x3Dt.at<float>(2)<<std::endl;
+        //break;
     }
     ofs.close();
 

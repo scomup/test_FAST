@@ -6,25 +6,11 @@
 
 #IncludeRegexTransform: 
 
-/home/liu/workspace/test_FAST/Frame.cc
-Frame.h
-/home/liu/workspace/test_FAST/Frame.h
-
 /home/liu/workspace/test_FAST/Frame.h
 ORBextractor.h
 /home/liu/workspace/test_FAST/ORBextractor.h
 opencv2/opencv.hpp
 -
-
-/home/liu/workspace/test_FAST/ORBextractor.cc
-opencv2/core/core.hpp
--
-opencv2/highgui/highgui.hpp
--
-vector
--
-ORBextractor.h
-/home/liu/workspace/test_FAST/ORBextractor.h
 
 /home/liu/workspace/test_FAST/ORBextractor.h
 vector
@@ -34,19 +20,11 @@ list
 opencv/cv.h
 -
 
-/home/liu/workspace/test_FAST/ORBmatcher.cc
-ORBmatcher.h
-/home/liu/workspace/test_FAST/ORBmatcher.h
-
 /home/liu/workspace/test_FAST/ORBmatcher.h
 opencv2/core/core.hpp
 -
 Frame.h
 /home/liu/workspace/test_FAST/Frame.h
-
-/home/liu/workspace/test_FAST/convert.cc
-convert.h
-/home/liu/workspace/test_FAST/convert.h
 
 /home/liu/workspace/test_FAST/convert.h
 opencv2/core/core.hpp
@@ -69,6 +47,10 @@ Frame.h
 /home/liu/workspace/test_FAST/Frame.h
 convert.h
 /home/liu/workspace/test_FAST/convert.h
+limits
+-
+math.h
+-
 
 /usr/local/include/opencv/cv.h
 opencv2/core/core_c.h
