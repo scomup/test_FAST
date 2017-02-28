@@ -1,0 +1,55 @@
+%YAML:1.0
+
+# image path.
+left.path:  "/home/liu/workspace/test_FAST/left0066.png"
+right.path: "/home/liu/workspace/test_FAST/right0066.png"
+
+# out path.
+out.path: "mapPoint.txt"
+
+# Camera Parameters. Adjust them!
+# left camera information
+left.Camera.fx: 348.766
+left.Camera.fy: 348.766
+left.Camera.cx: 335.553
+left.Camera.cy: 181.991
+
+left.Camera.k1: -0.173643
+left.Camera.k2: 0.0303331
+left.Camera.p1: 0
+left.Camera.p2: 0
+left.Camera.k3: 0
+left.Camera.k4: 0
+left.Camera.k5: 0
+left.Camera.k6: 0
+
+# right camera information
+right.Camera.fx: 346.225
+right.Camera.fy: 346.225
+right.Camera.cx: 325.248
+right.Camera.cy: 190.901
+
+right.Camera.k1: -0.177028
+right.Camera.k2: 0.0384029
+right.Camera.p1: 0
+right.Camera.p2: 0
+right.Camera.k3: 0
+right.Camera.k4: 0
+right.Camera.k5: 0
+right.Camera.k6: 0
+
+#Assuming left camera is set in original point
+#The pose information of left camera is set as following:
+right.trans.x: -0.12
+right.trans.y: 0
+right.trans.z: 0
+
+# ORB Extractor: Fast threshold (lower less restrictive)			
+ORBextractor.fastTh: 20
+
+# ORB Extractor: Score to sort features. 0 -> Harris Score, 1 -> FAST Score			
+ORBextractor.nScoreType: 0
+
+
+# Constant Velocity Motion Model (0 - disabled, 1 - enabled [recommended])
+UseMotionModel: 1
