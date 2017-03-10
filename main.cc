@@ -11,6 +11,7 @@
 #include <limits>
 #include <math.h> 
 
+#include <chrono>
 
 constexpr double epsilon = std::numeric_limits<double>::epsilon();
 
@@ -71,6 +72,8 @@ int main(int argc, char *argv[])
     DistCoef_l.at<float>(2) = fsSettings["left.Camera.p1"];
     DistCoef_l.at<float>(3) = fsSettings["left.Camera.p2"];
 
+    cv::Mat DistCoef = cv::Mat::zeros(4, 1, CV_32F);
+
     cv::Mat K_r = cv::Mat::eye(3, 3, CV_32F);
     K_r.at<float>(0, 0) = fsSettings["right.Camera.fx"];
     K_r.at<float>(1, 1) = fsSettings["right.Camera.fy"];
@@ -83,9 +86,6 @@ int main(int argc, char *argv[])
     DistCoef_r.at<float>(2) = fsSettings["right.Camera.p1"];
     DistCoef_r.at<float>(3) = fsSettings["right.Camera.p2"];
 
-    cv::Mat DistCoef  = cv::Mat::zeros(4, 1, CV_32F);
-    cv::Mat newK_l;
-    cv::Mat newK_r;
     cv::Mat R_;
     cv::Mat proj_r = (cv::Mat_<double>(3, 3) << 1, 0, 0, 0, 1, 0,  0, 0, 1);;
     cv::Mat left_rect;
@@ -94,10 +94,10 @@ int main(int argc, char *argv[])
 	cv::Mat mapx_r, mapy_r;
 
     cv::initUndistortRectifyMap(K_l, DistCoef_l, R_, K_l, left.size(), CV_32FC1, mapx_l, mapy_l);
-    cv::initUndistortRectifyMap(K_r, DistCoef_r, R_, K_r, left.size(), CV_32FC1, mapx_r, mapy_r);
+    cv::initUndistortRectifyMap(K_r, DistCoef_r, R_, K_l, left.size(), CV_32FC1, mapx_r, mapy_r);
     cv::remap(left,left_rect,mapx_l,mapy_l,cv::INTER_LINEAR);
-    cv::remap(right,right_rect,mapx_r,mapy_r,cv::INTER_LINEAR);
     cv::remap(left_c,left_c,mapx_l,mapy_l,cv::INTER_LINEAR);
+    cv::remap(right,right_rect,mapx_r,mapy_r,cv::INTER_LINEAR);
     cv::remap(right_c,right_c,mapx_r,mapy_r,cv::INTER_LINEAR);
 
 
@@ -108,7 +108,51 @@ int main(int argc, char *argv[])
     std::vector<cv::Point2f> vbPrevMatched;
     SearchForInitialization(Frame_left, Frame_right, vbPrevMatched, vnMatches12, 100);
 
+    std::vector<cv::Point2f> prevPts;
+    std::vector<cv::Point2f> currPts;
+    currPts.reserve(2000);
+
+
+    for (size_t i = 0; i < Frame_left.mvKeys.size(); i++)
+    {
+        prevPts.push_back(Frame_left.mvKeys[i].pt);
+    }
+    std::vector<uchar> features_found; 
+    features_found.reserve(2000);
+	std::vector<float> feature_errors; 
+    feature_errors.reserve(2000);
+
+
+    auto start = std::chrono::system_clock::now();       // 計測終了時刻を保存
+
+    cv::calcOpticalFlowPyrLK( left_rect, right_rect, prevPts, currPts, features_found, feature_errors ,
+		Size( 50, 50 ), 5,
+cvTermCriteria( CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.3 ), 0 );
+
+    auto end = std::chrono::system_clock::now();  
+
+    auto dur = end - start;        // 要した時間を計算 
+
+    auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+    std::cout << msec << " milli sec \n";
+
+
+    for (size_t i = 0; i < features_found.size(); i++)
+    {
+        if (features_found[i] != 1)
+            continue;
+        //c++;
+
+        line(left_c, prevPts[i], currPts[i], Scalar(0, 0, 255));
+        //line(left_c, currPts[i], prevPts[i], Scalar(0, 0, 255));
+        //line(right_c, currPts[i], prevPts[i], Scalar(0, 0, 255));
+        circle(left_c, prevPts[i], 2, Scalar(0, 255, 0));
+        //circle(right_c, kp_r.pt, 2, Scalar(0, 255, 0));
+    }
+
+
     //int c= 0;
+    /*
     for (size_t i = 0; i < vnMatches12.size(); i++)
     {
         if (vnMatches12[i] == -1)
@@ -120,7 +164,7 @@ int main(int argc, char *argv[])
         line(right_c, kp_l.pt, kp_r.pt, Scalar(0, 0, 255));
         circle(left_c, kp_l.pt, 2, Scalar(0, 255, 0));
         circle(right_c, kp_r.pt, 2, Scalar(0, 255, 0));
-    }
+    }*/
     //cv::drawKeypoints(left_c, Frame_left.mvKeys, left_c, cv::Scalar::all(-1) );
     //printf("all:%d\n Matches:%d\n",vnMatches12.size(),c);
 
@@ -163,6 +207,12 @@ int main(int argc, char *argv[])
             << "," << x_angle << "," << y_angle << "," << z_angle << std::endl;
     }
 
+    for (size_t i = 0; i < features_found.size(); i++)
+    {
+        if (features_found[i] != 1)
+            continue;
+/*
+
     for (size_t i = 0; i < vnMatches12.size(); i++)
     {
         if (vnMatches12[i] == -1)
@@ -173,7 +223,13 @@ int main(int argc, char *argv[])
         //float disparity = sqrt(kp1.pt.x * kp1.pt.x + kp1.pt.y * kp1.pt.y) - sqrt(kp2.pt.x * kp2.pt.x + kp2.pt.y * kp2.pt.y);
         cv::Mat xn1 = (cv::Mat_<float>(3, 1) << (kp1.pt.x - cx1) * invfx1, (kp1.pt.y - cy1) * invfy1, 1.0);
         cv::Mat xn2 = (cv::Mat_<float>(3, 1) << (kp2.pt.x - cx1) * invfx1, (kp2.pt.y - cy1) * invfy1, 1.0);
-        
+  */    
+
+        line(left_c, prevPts[i], currPts[i], Scalar(0, 0, 255));
+
+        cv::Mat xn1 = (cv::Mat_<float>(3, 1) << (prevPts[i].x - cx1) * invfx1, (prevPts[i].y - cy1) * invfy1, 1.0);
+        cv::Mat xn2 = (cv::Mat_<float>(3, 1) << (currPts[i].x - cx1) * invfx1, (currPts[i].y - cy1) * invfy1, 1.0);  
+
         // Linear Triangulation Method
         cv::Mat A(4, 4, CV_32F);
         A.row(0) = xn1.at<float>(0) * Tcw1.row(2) - Tcw1.row(0);
@@ -200,7 +256,7 @@ int main(int argc, char *argv[])
     }
     ofs.close();
     imshow("left", left_c);
-    imshow("right", right_c);
+    //imshow("right", right_c);
     waitKey(0);
 }
 
